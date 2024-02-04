@@ -1,56 +1,47 @@
 ﻿using System.Reflection;
-using Discord.Commands;
+using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 
 namespace Palworld.Discord.Bot.Net.Commands;
 
-public sealed class CommandHandler
+public sealed class CommandHandler(
+    DiscordSocketClient client,
+    InteractionService commands,
+    IServiceProvider services)
 {
-    private readonly DiscordSocketClient _client;
-    private readonly CommandService _commands;
-    private readonly IServiceProvider _services;
-
-    public CommandHandler(
-        DiscordSocketClient client,
-        CommandService commands,
-        IServiceProvider services)
-    {
-        this._client = client;
-        this._commands = commands;
-        this._services = services;
-    }
-
     public async Task InstallCommandsAsync()
     {
-        this._client.MessageReceived += this.HandleCommandAsync;
-        this._client.Ready += this.OnReadyAsync;
+        client.InteractionCreated += this.HandleInteractionAsync;
+        client.Ready += this.OnReadyAsync;
 
-        await this._commands.AddModulesAsync(Assembly.GetEntryAssembly(), this._services);
+        await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
+    }
+
+    private async Task HandleInteractionAsync(
+        SocketInteraction arg)
+    {
+        try
+        {
+            // create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
+            var ctx = new SocketInteractionContext(client, arg);
+            await commands.ExecuteCommandAsync(ctx, services);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            // if a Slash Command execution fails it is most likely that the original interaction acknowledgement will persist. It is a good idea to delete the original
+            // response, or at least let the user know that something went wrong during the command execution.
+            if (arg.Type == InteractionType.ApplicationCommand)
+            {
+                await arg.GetOriginalResponseAsync().ContinueWith(async msg => await msg.Result.DeleteAsync());
+            }
+        }
     }
 
     private async Task OnReadyAsync()
     {
-        await this._client.SetGameAsync("Palworld");
-    }
-
-    private async Task HandleCommandAsync(SocketMessage message)
-    {
-        if (message is not SocketUserMessage userMessage)
-        {
-            return;
-        }
-
-        int argPos = 0;
-        if (!userMessage.HasStringPrefix("!", ref argPos) ||
-            userMessage.Author.IsBot)
-        {
-            return;
-        }
-
-        SocketCommandContext context = new(this._client, userMessage);
-        await this._commands.ExecuteAsync(
-            context,
-            argPos,
-            this._services);
+        await client.SetGameAsync("Palworld");
+        await commands.RegisterCommandsGloballyAsync();
     }
 }

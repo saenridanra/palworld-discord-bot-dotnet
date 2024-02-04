@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Palworld.Discord.Bot.Net;
 using Palworld.Discord.Bot.Net.Commands;
@@ -35,12 +36,13 @@ builder.Services.AddSingleton(
         new DiscordSocketConfig
         {
             LogLevel = LogSeverity.Info,
-            GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
+            GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent,
+            UseInteractionSnowflakeDate = false
         }));
 
 builder.Services.AddSingleton<RconClientInternal>();
 
-builder.Services.AddSingleton<CommandService>();
+builder.Services.AddSingleton<InteractionService>();
 builder.Services.AddSingleton<CommandHandler>();
 builder.Services.AddHostedService<DiscordStartupService>();
 

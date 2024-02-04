@@ -3,17 +3,9 @@ using Rcon;
 
 namespace Palworld.Discord.Bot.Net.Rcon;
 
-internal sealed class RconClientInternal
+internal sealed class RconClientInternal(IOptions<RconOptions> options)
 {
-    private readonly IOptions<RconOptions> _options;
-    private readonly RconClient _rconClient;
-
-    public RconClientInternal(
-        IOptions<RconOptions> options)
-    {
-        this._options = options;
-        this._rconClient = new RconClient();
-    }
+    private readonly RconClient _rconClient = new();
 
     public async Task<string> SendCommandAsync(
         string command)
@@ -28,8 +20,8 @@ internal sealed class RconClientInternal
 
     private async Task<bool> ConnectAsync()
     {
-        await this._rconClient.ConnectAsync(this._options.Value.Host, this._options.Value.Port);
-        await this._rconClient.AuthenticateAsync(this._options.Value.Password);
+        await this._rconClient.ConnectAsync(options.Value.Host, options.Value.Port);
+        await this._rconClient.AuthenticateAsync(options.Value.Password);
 
         return this._rconClient.Authenticated;
     }

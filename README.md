@@ -5,8 +5,15 @@ Currently, the bot is under development and is not yet ready for public use.
 
 # Features
 The bot is designed to provide the following features:
-- You can show the server information using the discord command: `!Palworld.ShowServerInfo`
-- You can show the server players using the discord command: `!Palworld.ShowPlayers`
+- You can show the server information using the discord command: `/palworld_online`
+- You can show the server players using the discord command: `/palworld_info`
+
+The following features can only be invoked by a discord user, that has been added to the bot's admin list:
+- You can save the server state using the discord command: `/palworld_save`
+- You can shutdown the server using the discord command: `/palworld_shutdown <seconds> <reason>`
+- You can kick a player using the discord command: `/palworld_kick <player_name>`
+- You can ban a player using the discord command: `/palworld_ban <player_name> <reason>`
+- You can broadcast a message to the server using the discord command: `/palworld_broadcast <message>`
 
 # Usage
 If you want to run the bot, you can do so by following the steps below.
@@ -16,7 +23,8 @@ Initialize the app settings with the following values:
 ```json
 {
   "Discord": {
-    "Token": "YOUR BOT TOKEN"
+    "Token": "YOUR BOT TOKEN",
+    "Admins": [ <id_1>, <id_2>, <id_3>, ... ]
   },
   "Rcon": {
     "Host": "localhost",
